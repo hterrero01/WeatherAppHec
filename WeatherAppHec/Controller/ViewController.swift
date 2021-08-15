@@ -28,6 +28,8 @@ class ViewController: UIViewController {
     
     var currentLocation: CLLocation?
     
+    var weatherManager = WeatherServices()
+    
     let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
     
     
@@ -49,12 +51,11 @@ class ViewController: UIViewController {
     }
     
 
-    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
      
-
+        //checks permision for location servicies incase of any changes.
         if locationManager.authorizationStatus == .authorizedAlways || locationManager.authorizationStatus == .authorizedWhenInUse {
             locationManager.startUpdatingLocation()
 
@@ -67,12 +68,16 @@ class ViewController: UIViewController {
     
     func configureNavBar(){
 
+        //creates UIBarButton Item to be added to the navigation bar on the right side
         let barRightBtn = UIBarButtonItem(image: nil, landscapeImagePhone: nil, style: .plain, target: self, action: #selector(permissionBtn))
+        
         barRightBtn.title = "Permission"
+        
         self.navigationItem.rightBarButtonItem = barRightBtn
        
     }
     
+    //action for handling the navigationbar right button item
     @objc
     func permissionBtn(){
         setupLocation()
@@ -84,7 +89,7 @@ class ViewController: UIViewController {
     
     func configureTableView(){
         
-        //register the cell
+        //register the cell and assign delegates
         table.register(WeatherTableViewCell.nib(), forCellReuseIdentifier: WeatherTableViewCell.identifier)
         table.delegate = self
         table.dataSource = self
@@ -94,18 +99,20 @@ class ViewController: UIViewController {
 
     // MARK: - Current Weather Setup
     
+    //handles the TODAY weather data which is stored in current object
     func setUpCurrentWeather() {
+        
         
         guard let currentWeather = self.currentInfo else { return }
         
-        self.currentDateLabel.text = getDateFormatForDate(date: Date(timeIntervalSince1970: Double(currentWeather.dt)))
+        self.currentDateLabel.text = DateManager.getDayMonthDayYearDate(date: currentWeather.dt)
+
         self.currentSummaryLabel.text = currentWeather.weather[0].description
         self.currentTempLabel.text = "\(Int(currentWeather.temp))"
         
         let iconCode = currentWeather.weather[0].icon
         
         let url = "http://openweathermap.org/img/wn/\(iconCode)@2x.png"
-        
         
         let task = URLSession.shared.dataTask(with: URL(string: url)!) { (data, _, error) in
             guard let data = data, error == nil else {
@@ -124,40 +131,55 @@ class ViewController: UIViewController {
         
         
     }
-    
-    func getDateFormatForDate (date: Date?) -> String {
-        
-        guard let date = date else {
-            return "Couldnt convert date"
-        }
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "EEEE, MMM d, yyyy"
-        
-        
-        return dateFormatter.string(from: date)
-        
-    }
-    
+
 }
 
 
 // MARK: - LOCATION MANAGER DELEGATE
 extension ViewController: CLLocationManagerDelegate {
     
+    //checks status of location services
     func setupLocation() {
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.startUpdatingLocation()
+        
+        // checks if permission has been previously denied and alerts user.
+        if locationManager.authorizationStatus == .denied {
+            let alertController = UIAlertController(title: "Location Services DENIED", message: "Please change permission on Settings", preferredStyle: .alert)
+            alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
+                self.dismiss(animated: true, completion:  nil)
+            }))
+            present(alertController, animated: true, completion: nil)
+        } else {
+            locationManager.requestWhenInUseAuthorization()
+            locationManager.startUpdatingLocation()
+        }
+        
     }
     
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        
+        //request weather data once a lcoation has been determined
         if !locations.isEmpty, currentLocation == nil {
             currentLocation = locations.first
             locationManager.stopUpdatingLocation()
-            requestWeatherForLocation()
+            weatherManager.requestWeatherForLocation(location: currentLocation) { result in
+                
+                guard let result = result else {return}
+                self.currentInfo = result.current
+                let entries = result.daily
+                self.dailyModels.append(contentsOf: entries)
+                
+                DispatchQueue.main.async {
+                    self.table.reloadData()
+                    self.setUpCurrentWeather()
+                
+            }
         }
     }
+}
     
+    
+    //handles approprite action based on location services permission selected by the user.
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         
         switch manager.authorizationStatus {
@@ -177,54 +199,7 @@ extension ViewController: CLLocationManagerDelegate {
         }
     }
     
-    func requestWeatherForLocation() {
-        guard let currentLocation = currentLocation else {return}
-        let long = currentLocation.coordinate.longitude
-        let lat = currentLocation.coordinate.latitude
-        let exclusions = "minutely,alerts"
-        let apiKey = "00e968e72670c774ac30090f73fb5664"
-        let url = "https://api.openweathermap.org/data/2.5/onecall?lat=\(lat)&lon=\(long)&units=imperial&exclude=\(exclusions)&appid=\(apiKey)"
-        
-        URLSession.shared.dataTask(with: URL(string: url)!, completionHandler: { data, response, error in
-            //validation
-            
-            guard let data = data, error == nil else {
-                print ("something went wrong")
-                
-                return }
-            
-            
-            
-            //convert data to models/someobjects
-            
-            var json: openWeatherMapData?
-            
-            do{
-                json = try  JSONDecoder().decode(openWeatherMapData.self, from: data)
-            }
-            catch {
-                print ("error \(error)")
-            }
-            
-            guard let result = json else {
-                return
-            }
-            
-            self.currentInfo = result.current
-            let entries = result.daily
-            self.dailyModels.append(contentsOf: entries)
-            
-            DispatchQueue.main.async {
-                self.table.reloadData()
-                self.setUpCurrentWeather()
-                
-            }
-            
-            //update user interface
-        }).resume()
-        
-    }
-    
+          
 }
 
 // MARK: - UITABLEVIEW DELEGATE
