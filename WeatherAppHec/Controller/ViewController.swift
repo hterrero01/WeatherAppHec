@@ -28,6 +28,7 @@ class ViewController: UIViewController {
     
     var currentLocation: CLLocation?
     
+    //model handling all api requests
     var weatherManager = WeatherServices()
     
     let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
@@ -112,26 +113,18 @@ class ViewController: UIViewController {
         
         let iconCode = currentWeather.weather[0].icon
         
-        let url = "http://openweathermap.org/img/wn/\(iconCode)@2x.png"
-        
-        let task = URLSession.shared.dataTask(with: URL(string: url)!) { (data, _, error) in
-            guard let data = data, error == nil else {
-                print(error)
-                return
-            }
+        //retrives icon image for current weather
+        weatherManager.getWeatherIcon(iconCode: iconCode) { image in
+            guard let iconImage = image else {return}
+            
             DispatchQueue.main.async {
-                let downloadImage = UIImage(data: data)
-                self.currentIconImage.image = downloadImage
+                self.currentIconImage.image = iconImage
                 self.currentIconImage.contentMode = .scaleAspectFit
                 self.reloadInputViews()
                 print("Uploaded UIImage")
             }
         }
-        task.resume()
-        
-        
     }
-
 }
 
 
@@ -158,7 +151,7 @@ extension ViewController: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
-        //request weather data once a lcoation has been determined
+        //request weather data once a location has been determined
         if !locations.isEmpty, currentLocation == nil {
             currentLocation = locations.first
             locationManager.stopUpdatingLocation()
@@ -177,7 +170,6 @@ extension ViewController: CLLocationManagerDelegate {
         }
     }
 }
-    
     
     //handles approprite action based on location services permission selected by the user.
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {

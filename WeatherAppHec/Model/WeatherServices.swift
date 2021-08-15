@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreLocation
+import UIKit
 
 
 class WeatherServices {
@@ -58,6 +59,22 @@ class WeatherServices {
         }).resume()
         
     }
+    
+    //returns and image given a icon code
+    func getWeatherIcon (iconCode: String, completion: @escaping (UIImage?)->()) {
+        
+        let url = "http://openweathermap.org/img/wn/\(iconCode)@2x.png"
+        
+        let task = URLSession.shared.dataTask(with: URL(string: url)!) { (data, _, error) in
+            guard let data = data, error == nil else {
+                print(error)
+                return
+            }
+            let downloadImage = UIImage(data: data)
+            completion(downloadImage)
+        
+        }.resume()
+ }
 
     
 }
