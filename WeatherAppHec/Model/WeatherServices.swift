@@ -12,12 +12,13 @@ import UIKit
 
 class WeatherServices {
     
+    //API client key
     let apiKey = "00e968e72670c774ac30090f73fb5664"
+    
+    //exclusion to remove from API response
     let exclusions = "minutely,alerts"
-    
-    
-    
 
+    
     
     
     //Does request call to the OpenWeathermap API with a completion handler to update UI related objects

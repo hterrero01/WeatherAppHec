@@ -31,12 +31,8 @@ class ViewController: UIViewController {
     //model handling all api requests
     var weatherManager = WeatherServices()
     
-    let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
     
     
-    
-    
-
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -49,6 +45,7 @@ class ViewController: UIViewController {
         
         //setup the navigation bar with barBtnItem
         configureNavBar()
+        
     }
     
 
@@ -59,11 +56,10 @@ class ViewController: UIViewController {
         //checks permision for location servicies incase of any changes.
         if locationManager.authorizationStatus == .authorizedAlways || locationManager.authorizationStatus == .authorizedWhenInUse {
             locationManager.startUpdatingLocation()
+            
 
         }
-        
     }
-    
     
     // MARK: - NAV BarConfiguration
     
@@ -121,7 +117,7 @@ class ViewController: UIViewController {
                 self.currentIconImage.image = iconImage
                 self.currentIconImage.contentMode = .scaleAspectFit
                 self.reloadInputViews()
-                print("Uploaded UIImage")
+
             }
         }
     }

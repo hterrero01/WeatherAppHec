@@ -33,36 +33,17 @@ struct CurrentWeather: Codable  {
     let visibility: Double
     let wind_speed: Double
     let wind_deg: Double
-//    let rain: RainWeather
-//    let snow: SnowWeather
     let weather: [WeatherWeather]
     
 }
-//struct RainWeather: Codable {
-//    let the1h: Double
-//
-//    enum CodingKeys: String, CodingKey {
-//            case the1H = "1h"
-//        }
-//
-//}
-//struct SnowWeather: Codable {
-//    let t1h: Double
-//
-//    enum CodingKeys: String, CodingKey {
-//            case the1H = "1h"
-//        }
-//}
+
 struct WeatherWeather: Codable {
     let id: Int
     let main: String
     let description: String
     let icon: String
 }
-//struct HourlyWeather: Codable {
-//    let data: [HourlyWeatherItem]
-//
-//}
+
 struct HourlyWeatherItem: Codable {
     let dt: Int
     let temp: Double
@@ -99,7 +80,6 @@ struct DailyWeatherItem: Codable {
     let weather: [WeatherWeather]
     let clouds: Double
     let pop: Double
-//    let rain: Double
     let uvi: Double
     
 }
