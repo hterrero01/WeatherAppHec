@@ -19,6 +19,8 @@ class WeatherTableViewCell: UITableViewCell {
     @IBOutlet  var lowTempLabel: UILabel!
     @IBOutlet  var highTempLabel: UILabel!
     
+    let weatherManager = WeatherServices()
+    
     
     
     
@@ -38,67 +40,29 @@ class WeatherTableViewCell: UITableViewCell {
     }
     
     
+    //configures the sell based on the model data
     func configure(with model: DailyWeatherItem) {
         
         self.lowTempLabel.text = "\(Int(model.temp.min))"
+        
         self.highTempLabel.text = "\(Int(model.temp.max))"
-        self.dayLabel.text = getDayForDate(date: Date(timeIntervalSince1970: Double(model.dt)))
-        getIconForDay(iconCode: model.weather[0].icon)
-        self.dateLabel.text = getDateFormatForDate(date: Date(timeIntervalSince1970: Double(model.dt)))
         
+        self.dayLabel.text = DateManager.getDayForDate(date: model.dt)
         
-    }
-    
-    func getDayForDate(date: Date?) -> String {
+        let iconCode = model.weather[0].icon
         
-        guard let date = date else {
-            return "Couldnt convert date"
-        }
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "EEEE"
-        
-        
-        return dateFormatter.string(from: date)
-        
-    }
-    
-    func getIconForDay (iconCode: String) {
-    
-        let url = "http://openweathermap.org/img/wn/\(iconCode)@2x.png"
-        
-        
-        let task = URLSession.shared.dataTask(with: URL(string: url)!) { (data, _, error) in
-            guard let data = data, error == nil else {
-                print("THERE IS AN ERROR")
-                print(error)
-                return
-            }
+        weatherManager.getWeatherIcon(iconCode: iconCode) { image in
+            guard let iconImage = image else {return}
+            
             DispatchQueue.main.async {
-                let downloadImage = UIImage(data: data)
-                self.iconImageView.image = downloadImage
+                self.iconImageView.image = iconImage
                 self.reloadInputViews()
                 print("Uploaded UIImage")
             }
         }
-        task.resume()
         
-        
-    }
-    
-    func getDateFormatForDate (date: Date?) -> String {
-        
-        guard let date = date else {
-            return "Couldnt convert date"
-        }
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MMM d"
-        
-        
-        return dateFormatter.string(from: date)
+        self.dateLabel.text = DateManager.getMonthDayDate(date: model.dt)
         
     }
-    
-    
+
 }

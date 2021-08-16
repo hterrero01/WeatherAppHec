@@ -27,4 +27,37 @@ class DateManager {
         return dateFormatter.string(from: correctDate)
         
     }
+    
+    
+    class func getMonthDayDate (date: Int) -> String {
+        
+        
+        let correctDate = Date(timeIntervalSince1970: Double(date))
+        
+    
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM d"
+        
+        
+        return dateFormatter.string(from: correctDate)
+        
+    
+    }
+    
+    //returns day for a given date
+    class func getDayForDate(date: Int) -> String {
+        
+        let correctDate = Date(timeIntervalSince1970: Double(date))
+        
+    
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEEE"
+        
+        
+        return dateFormatter.string(from: correctDate)
+        
+        
+    }
 }

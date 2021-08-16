@@ -148,7 +148,6 @@ extension ViewController: CLLocationManagerDelegate {
         
     }
     
-    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
         //request weather data once a location has been determined
