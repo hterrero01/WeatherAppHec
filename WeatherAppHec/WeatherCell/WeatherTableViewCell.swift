@@ -57,7 +57,6 @@ class WeatherTableViewCell: UITableViewCell {
             DispatchQueue.main.async {
                 self.iconImageView.image = iconImage
                 self.reloadInputViews()
-                print("Uploaded UIImage")
             }
         }
         

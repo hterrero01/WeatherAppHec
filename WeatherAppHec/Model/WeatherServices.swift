@@ -33,7 +33,7 @@ class WeatherServices {
             //validation
             
             guard let data = data, error == nil else {
-                print ("something went wrong")
+                print ("Something went wrong with api call")
                 
                 return }
             
