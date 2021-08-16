@@ -31,11 +31,19 @@ class ViewController: UIViewController {
     //model handling all api requests
     var weatherManager = WeatherServices()
     
+    var allIsHidden = false
+    
+    var loaderIcon = UIActivityIndicatorView()
+    
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        hideAll()
         // Do any additional setup after loading the view.
+        
+        //hides all UI until data is avaible
+        
         
         //assign location managers delegate
         locationManager.delegate = self
@@ -48,6 +56,8 @@ class ViewController: UIViewController {
         
     }
     
+    
+    
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -59,6 +69,45 @@ class ViewController: UIViewController {
             
 
         }
+    }
+    
+    
+    //hides UI until data is avaiable for cleaner look
+    func hideAll(){
+        if !allIsHidden {
+            table.isHidden = true
+            currentDateLabel.isHidden = true
+            currentIconImage.isHidden = true
+            currentIconImage.isHidden = true
+            currentSummaryLabel.isHidden = true
+            currentTempLabel.isHidden = true
+            allIsHidden = true
+     
+            self.view.addSubview(loaderIcon)
+            loaderIcon.translatesAutoresizingMaskIntoConstraints = false
+            loaderIcon.centerXAnchor.constraint(equalTo: self.view.centerXAnchor).isActive = true
+            loaderIcon.centerYAnchor.constraint(equalTo: self.view.centerYAnchor).isActive = true
+            loaderIcon.startAnimating()
+            
+        }
+        
+    }
+    
+    //unhides UI to display data
+    func unHideAll(){
+        if allIsHidden {
+            loaderIcon.stopAnimating()
+            loaderIcon.isHidden = true
+            table.isHidden = false
+            currentDateLabel.isHidden = false
+            currentIconImage.isHidden = false
+            currentIconImage.isHidden = false
+            currentSummaryLabel.isHidden = false
+            currentTempLabel.isHidden = false
+            allIsHidden = false
+            
+        }
+        
     }
     
     // MARK: - NAV BarConfiguration
@@ -160,6 +209,7 @@ extension ViewController: CLLocationManagerDelegate {
                 DispatchQueue.main.async {
                     self.table.reloadData()
                     self.setUpCurrentWeather()
+                    self.unHideAll()
                 
             }
         }
